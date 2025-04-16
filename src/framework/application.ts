@@ -1,47 +1,61 @@
 import express from 'express';
-import { Provider } from './interfaces';
-import { toStringToken } from './utils';
+import { DIContainer } from './di-container';
+import { Provider, Type } from './interfaces';
+import { HttpMetadataReflector } from './reflector';
+import { HttpExecutionContext } from './context';
+
+type ApplicationConfig = {
+  providers: Provider[];
+  controllers: Type[];
+};
 
 export class Application {
   private http: express.Express;
-  private providers: Provider[];
-  private container: Map<string, any>;
+  private container: DIContainer;
+  private controllers: Type[];
 
-  constructor() {
+  constructor(config: ApplicationConfig) {
+    const { providers, controllers } = config;
     this.http = express();
-    this.providers = [];
-    this.container = new Map();
-  }
-
-  public register(providers: Provider[]) {
-    this.providers = this.providers.concat(providers);
-    return this;
+    this.container = new DIContainer(providers);
+    this.controllers = controllers;
   }
 
   public async bootstrap() {
-    for (const provider of this.providers) {
-      // @ts-ignore
-      const { provide, factory, value, inject = [] } = provider;
-      const token = toStringToken(provide);
-      let instance;
-      if (value) {
-        instance = value;
-      }
-      if (factory) {
-        const args = inject.map((arg: any) => {
-          const subtoken = toStringToken(arg);
-          const value = this.container.get(subtoken);
-          if (!value) {
-            throw new Error(`Missing dependency '${subtoken}' when creating '${token}'`);
+    await this.container.bootstrap();
+    for (const ControllerClass of this.controllers) {
+      const router = express.Router();
+      const prefix = HttpMetadataReflector.prefix(ControllerClass);
+      const controller = this.container.resolve(ControllerClass);
+
+      const prototype = Object.getPrototypeOf(controller);
+      const properties = Object.getOwnPropertyNames(prototype);
+
+      for (const property of properties) {
+        const handler = controller[property] as Function;
+        if (typeof handler !== 'function') {
+          continue;
+        }
+
+        const path = HttpMetadataReflector.path(handler);
+        const method = HttpMetadataReflector.method(handler);
+        if (method == null) {
+          continue;
+        }
+
+        // @ts-ignore
+        router[method](path, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+          const ctx = new HttpExecutionContext(req, res, next);
+          try {
+            const result = await handler.call(controller, ctx);
+            res.status(200).json(result);
+          } catch (error: any) {
+            res.status(500).json({ message: error.message });
           }
-          return value;
         });
-        instance = await factory(...args);
       }
-      if (!instance) {
-        throw new Error(`Can not create '${token}'`);
-      }
-      this.container.set(token, instance);
+
+      prefix ? this.http.use(prefix, router) : this.http.use(router);
     }
   }
 
