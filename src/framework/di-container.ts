@@ -49,7 +49,7 @@ export class DIContainer {
     if (!instance) {
       throw new Error(`Not found instance '${key}'`);
     }
-    return instance as TInput;
+    return instance as TOutput;
   }
 
   public resolve<T = any>(cls: Type<T>) {

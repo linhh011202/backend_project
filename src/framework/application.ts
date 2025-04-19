@@ -43,8 +43,16 @@ export class Application {
           continue;
         }
 
+        const middlewares = HttpMetadataReflector.middlewares(handler).map(middleware => {
+          if (typeof middleware === 'object') {
+            return middleware.handle.bind(middleware);
+          }
+          const instance = this.container.resolve(middleware)
+          return instance.handle.bind(instance);
+        });
+
         // @ts-ignore
-        router[method](path, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+        router[method](path, ...middlewares, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
           const ctx = new HttpExecutionContext(req, res, next);
           try {
             const result = await handler.call(controller, ctx);

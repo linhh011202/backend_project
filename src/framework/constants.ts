@@ -2,6 +2,7 @@ export enum HttpMetadata {
   Method = 'HTTP.METHOD',
   Path = 'HTTP.PATH',
   Prefix = 'HTTP.PREFIX',
+  Middlewares = 'HTTP.MIDDLEWARES',
 }
 
 export enum HttpMethod {

@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { HttpMetadata, HttpMethod } from './constants';
+import { ClassOrInstance, RequestMiddleware } from './interfaces';
 
 const HttpRequest = (method: string, path?: string): MethodDecorator => {
   return (target, prop, descriptor) => {
@@ -21,5 +22,11 @@ export const Delete = (path?: string) => HttpRequest(HttpMethod.Delete, path);
 export const Controller = (prefix?: string): ClassDecorator => {
   return target => {
     Reflect.defineMetadata(HttpMetadata.Prefix, prefix || '', target);
+  };
+};
+
+export const UseMiddlewares = (...middlewares: ClassOrInstance<RequestMiddleware>[]): MethodDecorator => {
+  return (target, prop, descriptor) => {
+    Reflect.defineMetadata(HttpMetadata.Middlewares, middlewares, descriptor.value!);
   };
 };
