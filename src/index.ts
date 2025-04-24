@@ -1,11 +1,16 @@
 import express from 'express';
-import session from 'express-session';
 import { AuthController, ExampleController } from './controllers';
 import { Application } from './framework';
+import { EnvService } from './services';
 
 async function main() {
   const app = new Application({
-    providers: [],
+    providers: [
+      {
+        provide: EnvService,
+        value: new EnvService({}),
+      },
+    ],
     controllers: [AuthController, ExampleController],
   });
 

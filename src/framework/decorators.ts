@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { HttpMetadata, HttpMethod } from './constants';
-import { ClassOrInstance, RequestMiddleware } from './interfaces';
+import { ClassOrInstance, RequestGuard, RequestMiddleware } from './interfaces';
 
 const HttpRequest = (method: string, path?: string): MethodDecorator => {
   return (target, prop, descriptor) => {
@@ -28,5 +28,17 @@ export const Controller = (prefix?: string): ClassDecorator => {
 export const UseMiddlewares = (...middlewares: ClassOrInstance<RequestMiddleware>[]): MethodDecorator => {
   return (target, prop, descriptor) => {
     Reflect.defineMetadata(HttpMetadata.Middlewares, middlewares, descriptor.value!);
+  };
+};
+
+export const UseGuards = (...guards: ClassOrInstance<RequestGuard>[]): MethodDecorator => {
+  return (target, prop, descriptor) => {
+    Reflect.defineMetadata(HttpMetadata.Guards, guards, descriptor.value!);
+  };
+};
+
+export const Permissions = (...permissions: string[]): MethodDecorator => {
+  return (target, prop, descriptor) => {
+    Reflect.defineMetadata(HttpMetadata.Permissions, permissions, descriptor.value!);
   };
 };

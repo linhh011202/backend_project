@@ -1,5 +1,5 @@
 import { HttpMetadata } from './constants';
-import { ClassOrInstance, RequestMiddleware, Type } from './interfaces';
+import { ClassOrInstance, RequestGuard, RequestMiddleware, Type } from './interfaces';
 
 export namespace HttpMetadataReflector {
   export function prefix(Controller: Type) {
@@ -20,5 +20,21 @@ export namespace HttpMetadataReflector {
       middlewares = [];
     }
     return middlewares as ClassOrInstance<RequestMiddleware>[];
+  }
+
+  export function guards(fn: Function) {
+    let guards = Reflect.getMetadata(HttpMetadata.Guards, fn);
+    if (guards == null) {
+      guards = [];
+    }
+    return guards as ClassOrInstance<RequestGuard>[];
+  }
+
+  export function permissions(fn: Function) {
+    let arr = Reflect.getMetadata(HttpMetadata.Permissions, fn);
+    if (arr == null) {
+      arr = [];
+    }
+    return arr as string[];
   }
 }

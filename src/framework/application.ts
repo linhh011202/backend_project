@@ -1,8 +1,8 @@
 import express from 'express';
+import { HttpExecutionContext } from './context';
 import { DIContainer } from './di-container';
 import { Provider, Type } from './interfaces';
 import { HttpMetadataReflector } from './reflector';
-import { HttpExecutionContext } from './context';
 
 type ApplicationConfig = {
   providers: Provider[];
@@ -47,20 +47,40 @@ export class Application {
           if (typeof middleware === 'object') {
             return middleware.handle.bind(middleware);
           }
-          const instance = this.container.resolve(middleware)
+          const instance = this.container.resolve(middleware);
           return instance.handle.bind(instance);
         });
 
-        // @ts-ignore
-        router[method](path, ...middlewares, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-          const ctx = new HttpExecutionContext(req, res, next);
-          try {
-            const result = await handler.call(controller, ctx);
-            res.status(200).json(result);
-          } catch (error: any) {
-            res.status(500).json({ message: error.message });
+        const guards = HttpMetadataReflector.guards(handler).map(guard => {
+          if (typeof guard === 'object') {
+            return guard;
           }
+          return this.container.resolve(guard);
         });
+
+        // @ts-ignore
+        router[method](
+          path,
+          ...middlewares,
+          async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+            const ctx = new HttpExecutionContext(req, res, next, handler);
+            try {
+              for (const guard of guards) {
+                const ok = await guard.can(ctx);
+                if (!ok) {
+                  res.status(403).json({ message: 'Forbidden' });
+                  return;
+                }
+              }
+              const result = await handler.call(controller, ctx);
+              if (!res.headersSent) {
+                res.status(200).json(result);
+              }
+            } catch (error: any) {
+              res.status(500).json({ message: error.message });
+            }
+          }
+        );
       }
 
       prefix ? this.http.use(prefix, router) : this.http.use(router);

@@ -1,4 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
+import { HttpExecutionContext } from './context';
+
+declare global {
+  namespace Express {
+    interface Request {
+      user: any;
+    }
+  }
+}
 
 export interface Type<T = any> extends Function {
   new (...args: any[]): T;
@@ -23,4 +32,8 @@ export type Provider<T = any> = ValueProvider<T> | FactoryProvider<T>;
 
 export interface RequestMiddleware {
   handle(req: Request, res: Response, next: NextFunction): void | Promise<void>;
+}
+
+export interface RequestGuard {
+  can(ctx: HttpExecutionContext): boolean | Promise<boolean>;
 }

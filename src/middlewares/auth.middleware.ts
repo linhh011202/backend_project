@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { RequestMiddleware } from '../framework';
+import users from '../static/users';
 
 export class AuthMiddleware implements RequestMiddleware {
   public handle(req: Request, res: Response, next: NextFunction) {
@@ -15,6 +16,9 @@ export class AuthMiddleware implements RequestMiddleware {
     }
     const token = authheader.replace('Bearer ', '');
     jwt.verify(token, 'mysecret', (err, decoded) => {
+      // @ts-ignore
+      const user = users.find(user => user.id === decoded.id);
+      req.user = user;
       if (err) {
         res.status(401).json({ message: 'Unauthorized' });
         return;
