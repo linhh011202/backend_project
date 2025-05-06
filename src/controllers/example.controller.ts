@@ -2,13 +2,38 @@ import { Controller, Get, HttpExecutionContext, Permissions, UseGuards, UseMiddl
 import { PermissionGuard } from '../guards';
 import { AuthMiddleware } from '../middlewares';
 
+
+// export class MyGuard implements RequestGuard {
+//   public can(ctx: HttpExecutionContext) {
+//     const permissions = ctx.req.permissions
+//     return permissions.some((permission) => ctx.req.user.permissions.includes(permission))
+//   }
+// }
+
 @Controller('/v1')
 export class ExampleController {
   @UseMiddlewares(AuthMiddleware)
   @UseGuards(PermissionGuard)
-  @Permissions('list.example')
-  @Get('/examples')
-  public list(ctx: HttpExecutionContext) {
-    return [{ name: 'ok' }];
+  @Permissions('delete')
+  @Get('/delete')
+  public delete(ctx: HttpExecutionContext) {
+    return [{ name: 'delete ok' }];
+  }
+
+  @UseMiddlewares(AuthMiddleware)
+  @UseGuards(PermissionGuard)
+  @Permissions('edit')
+  @Get('/edit')
+  public edit(ctx: HttpExecutionContext) {
+    return [{ name: 'edit ok' }];
+  }
+
+  
+  @UseMiddlewares(AuthMiddleware)
+  @UseGuards(PermissionGuard)
+  @Permissions('view')
+  @Get('/view')
+  public view(ctx: HttpExecutionContext) {
+    return [{ name: 'view ok' }];
   }
 }

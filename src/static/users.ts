@@ -4,7 +4,7 @@ const users = [
     fullname: 'user1',
     username: 'user1',
     password: 'mypassword',
-    permissions: [],
+    role_id: "",
   },
 ];
 
