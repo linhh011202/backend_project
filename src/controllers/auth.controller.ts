@@ -14,6 +14,7 @@ export class AuthController {
     private prisma: PrismaClient,
   ) {}
 
+
   @Post('/sign-up')
   public async signUP(ctx: HttpExecutionContext) {
     const { name, username, password, role_id } = ctx.req.body;
