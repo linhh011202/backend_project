@@ -17,8 +17,6 @@
     "express": "^5.1.0",
     "express-session": "^1.18.1",
     "jsonwebtoken": "^9.0.2",
-    "pg": "^8.14.1",
-    "pg-pool": "^3.8.0",
     "rbac-ts": "^2.1.0",
     "reflect-metadata": "^0.2.2"
   },

@@ -17,6 +17,7 @@ export class AuthController {
 
   @Post('/sign-up')
   public async signUP(ctx: HttpExecutionContext) {
+    ctx.req.query.abc
     const { name, username, password, role_id } = ctx.req.body;
     
     const salt = this.env.get("HASH_SALT") || '0'

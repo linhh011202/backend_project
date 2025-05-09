@@ -1,2 +1,2 @@
 export * from './permission.guard';
-export * from './rbac';
+export * from '../services/rbac';

@@ -1,21 +1,13 @@
-import { Controller, Get, HttpExecutionContext, Permissions, UseGuards, UseMiddlewares } from '../framework';
+import { Controller, Get, Put, Delete, HttpExecutionContext, Permissions, UseGuards, UseMiddlewares } from '../framework';
 import { PermissionGuard } from '../guards';
 import { AuthMiddleware } from '../middlewares';
 
-
-// export class MyGuard implements RequestGuard {
-//   public can(ctx: HttpExecutionContext) {
-//     const permissions = ctx.req.permissions
-//     return permissions.some((permission) => ctx.req.user.permissions.includes(permission))
-//   }
-// }
-
-@Controller('/v1')
+@Controller('/v1/object')
 export class ExampleController {
   @UseMiddlewares(AuthMiddleware)
   @UseGuards(PermissionGuard)
   @Permissions('delete')
-  @Get('/delete')
+  @Delete('')
   public delete(ctx: HttpExecutionContext) {
     return [{ name: 'delete ok' }];
   }
@@ -23,7 +15,7 @@ export class ExampleController {
   @UseMiddlewares(AuthMiddleware)
   @UseGuards(PermissionGuard)
   @Permissions('edit')
-  @Get('/edit')
+  @Put('')
   public edit(ctx: HttpExecutionContext) {
     return [{ name: 'edit ok' }];
   }
@@ -31,9 +23,19 @@ export class ExampleController {
   
   @UseMiddlewares(AuthMiddleware)
   @UseGuards(PermissionGuard)
-  @Permissions('view')
-  @Get('/view')
+  @Permissions('view', 'edit')
+  @Get('')
   public view(ctx: HttpExecutionContext) {
+    ctx.req.query.abc
+    ctx.req.query.sca_esv
     return [{ name: 'view ok' }];
   }
 }
+
+
+
+
+// method name:   | function 
+// Delete    --> delete 
+//Put    --> edit
+// Get       --> view

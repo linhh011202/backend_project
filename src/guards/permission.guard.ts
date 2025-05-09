@@ -1,12 +1,13 @@
 import { HttpExecutionContext, HttpMetadataReflector, RequestGuard } from '../framework';
-import { RBACMananger } from '.'
+import { RBAC, EnvService } from '../services';
 
 export class PermissionGuard implements RequestGuard {
   public async can(ctx: HttpExecutionContext) {
     const permissions = HttpMetadataReflector.permissions(ctx.handler);
 
+    return permissions.some((permission) => {
     // @ts-ignore
-    return RBACMananger.core.can(ctx.req.role, permissions[0])
-    // return permissions.some((permission) => ctx.req.user.permissions.includes(permission))
+      return RBAC.can(ctx.req.role, permission)
+    })
   }
 }
