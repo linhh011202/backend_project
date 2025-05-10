@@ -3,6 +3,9 @@ import { HttpExecutionContext, HttpMetadataReflector, RequestGuard } from '../fr
 export class PermissionGuard implements RequestGuard {
   public can(ctx: HttpExecutionContext) {
     const permissions = HttpMetadataReflector.permissions(ctx.handler);
-    return permissions.some((permission) => ctx.req.user.permissions.includes(permission))
+    const user = ctx.req.user;
+    return permissions.some(permission => {
+      return user.role.permissions.some(p => p.name === permission);
+    });
   }
 }

@@ -12,9 +12,9 @@ export class EnvService {
   public get<TOutput = string>(key: string, fallback?: TOutput) {
     const value = this.key2value[key] as TOutput;
     if (value === undefined) {
-      return fallback;
+      return fallback as TOutput;
     }
-    return value;
+    return value as TOutput;
   }
 
   public number(key: string, fallback?: number) {

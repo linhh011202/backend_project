@@ -1,28 +1,41 @@
 import express from 'express';
 import { HttpExecutionContext } from './context';
 import { DIContainer } from './di-container';
-import { Provider, Type } from './interfaces';
+import { ClassOrInstance, Provider, RequestMiddleware, Type } from './interfaces';
 import { HttpMetadataReflector } from './reflector';
 
 type ApplicationConfig = {
   providers: Provider[];
   controllers: Type[];
+  middlewares: ClassOrInstance<RequestMiddleware>[];
 };
 
 export class Application {
   private http: express.Express;
   private container: DIContainer;
   private controllers: Type[];
+  private middlewares: ClassOrInstance<RequestMiddleware>[];
 
   constructor(config: ApplicationConfig) {
-    const { providers, controllers } = config;
+    const { providers, controllers, middlewares } = config;
     this.http = express();
     this.container = new DIContainer(providers);
     this.controllers = controllers;
+    this.middlewares = middlewares;
   }
 
   public async bootstrap() {
     await this.container.bootstrap();
+
+    // global middlewares
+    const $middlewares = this.middlewares.map(middleware => {
+      if (typeof middleware === 'object') {
+        return middleware.handle.bind(middleware);
+      }
+      const instance = this.container.resolve(middleware);
+      return instance.handle.bind(instance);
+    });
+
     for (const ControllerClass of this.controllers) {
       const router = express.Router();
       const prefix = HttpMetadataReflector.prefix(ControllerClass);
@@ -61,6 +74,7 @@ export class Application {
         // @ts-ignore
         router[method](
           path,
+          ...$middlewares,
           ...middlewares,
           async (req: express.Request, res: express.Response, next: express.NextFunction) => {
             const ctx = new HttpExecutionContext(req, res, next, handler);

@@ -1,25 +1,59 @@
+import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
+import bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { Controller, Get, HttpExecutionContext, Post } from '../framework';
 import { EnvService } from '../services';
-import users from '../static/users';
 
 @Controller('/auth')
 export class AuthController {
-  constructor(private readonly env: EnvService) {}
+  constructor(private readonly env: EnvService, private prisma: PrismaClient) {}
+
+  @Post('/sign-up')
+  public async signUp(ctx: HttpExecutionContext) {
+    const { name, username, password, roleId } = ctx.req.body;
+
+    // @todo: check if role existed
+
+    const salt = this.env.get<string>('HASH_SALT', '10');
+    const hashedPassword = await bcrypt.hash(password, +salt);
+    const user = await this.prisma.user.create({
+      data: {
+        name,
+        username,
+        password: hashedPassword,
+        roleId,
+      },
+    });
+
+    // @ts-ignore
+    delete user.password;
+
+    return user;
+  }
 
   @Post('/login')
-  public login(ctx: HttpExecutionContext) {
+  public async login(ctx: HttpExecutionContext) {
     const { username, password } = ctx.req.body;
-    const user = users.find(user => {
-      return user.username === username || user.password === password;
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        username,
+      },
     });
-    if (user) {
-      const token = jwt.sign({ id: user.id }, 'mysecret', { expiresIn: '5Mins' });
-      return { token };
-    } else {
-      throw new Error('Invalid username or password');
+
+    if (user == null) {
+      throw new Error('User not found');
     }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      throw new Error('Incorrect username or password');
+    }
+
+    return {
+      accessToken: jwt.sign({ id: user.id }, this.env.get('JWT_SECRET_KEY', 'mysecret'), { expiresIn: '15Mins' }),
+    };
   }
 
   @Get('/github/callback')

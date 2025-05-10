@@ -3,8 +3,21 @@ import { HttpExecutionContext } from './context';
 
 declare global {
   namespace Express {
+    interface IUser {
+      id: number;
+      name: string;
+      role: {
+        id: number;
+        name: string;
+        permissions: {
+          id: number;
+          name: string;
+        }[];
+      };
+    }
+
     interface Request {
-      user: any;
+      user: IUser;
     }
   }
 }
