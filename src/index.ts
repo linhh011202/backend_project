@@ -1,5 +1,5 @@
 import express from 'express';
-import { PrismaClient } from '../prisma/generated/prisma';
+import { PrismaClient } from '@prisma/client';
 import { AuthController, ExampleController } from './controllers';
 import { Application } from './framework';
 import { AuthMiddleware } from './middlewares';

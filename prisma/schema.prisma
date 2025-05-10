@@ -1,6 +1,6 @@
 generator client {
     provider = "prisma-client-js"
-    output   = "generated/prisma"
+    output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -36,12 +36,12 @@ model RolePermission {
 }
 
 model User {
-    id       Int     @id @default(autoincrement())
-    name     String  @db.VarChar(100)
-    username String  @unique @db.VarChar(100)
-    password String  @db.VarChar(255)
-    roleId   Int     @map("role_id")
-    role     Role    @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    id       Int    @id @default(autoincrement())
+    name     String @db.VarChar(100)
+    username String @unique @db.VarChar(100)
+    password String @db.VarChar(255)
+    roleId   Int    @map("role_id")
+    role     Role   @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
     @@map("users")
 }

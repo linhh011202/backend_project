@@ -1,7 +1,7 @@
+import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
 import bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
-import { PrismaClient } from '../../prisma/generated/prisma';
 import { Controller, Get, HttpExecutionContext, Post } from '../framework';
 import { EnvService } from '../services';
 
@@ -10,7 +10,7 @@ export class AuthController {
   constructor(private readonly env: EnvService, private prisma: PrismaClient) {}
 
   @Post('/sign-up')
-  public async signUP(ctx: HttpExecutionContext) {
+  public async signUp(ctx: HttpExecutionContext) {
     const { name, username, password, roleId } = ctx.req.body;
 
     // @todo: check if role existed

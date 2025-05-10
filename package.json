@@ -6,7 +6,8 @@
   "scripts": {
     "start:dev": "yarn ts-node src/index.ts",
     "prisma:generate": "yarn prisma generate",
-    "prisma:migrate": "yarn prisma migrate",
+    "prisma:migrate": "yarn prisma migrate dev",
+    "prisma:deploy": "yarn prisma deploy",
     "build": "yarn tsc"
   },
   "keywords": [],
