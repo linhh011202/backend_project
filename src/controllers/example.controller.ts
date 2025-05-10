@@ -1,41 +1,36 @@
-import { Controller, Get, Put, Delete, HttpExecutionContext, Permissions, UseGuards, UseMiddlewares } from '../framework';
+import { PermissionName } from '../constants';
+import { Controller, Delete, Get, HttpExecutionContext, Permissions, Post, Put, UseGuards } from '../framework';
 import { PermissionGuard } from '../guards';
-import { AuthMiddleware } from '../middlewares';
 
 @Controller('/v1/object')
 export class ExampleController {
-  @UseMiddlewares(AuthMiddleware)
   @UseGuards(PermissionGuard)
-  @Permissions('delete')
-  @Delete('')
+  @Permissions(PermissionName.CreateExample)
+  @Post()
+  public create(ctx: HttpExecutionContext) {
+    return [{ name: 'delete ok' }];
+  }
+
+  @UseGuards(PermissionGuard)
+  @Permissions(PermissionName.DeleteExample)
+  @Delete('/:id')
   public delete(ctx: HttpExecutionContext) {
     return [{ name: 'delete ok' }];
   }
 
-  @UseMiddlewares(AuthMiddleware)
   @UseGuards(PermissionGuard)
-  @Permissions('edit')
-  @Put('')
+  @Permissions(PermissionName.ModifyExample)
+  @Put('/:id')
   public edit(ctx: HttpExecutionContext) {
     return [{ name: 'edit ok' }];
   }
 
-  
-  @UseMiddlewares(AuthMiddleware)
   @UseGuards(PermissionGuard)
-  @Permissions('view', 'edit')
+  @Permissions(PermissionName.ViewExample)
   @Get('')
   public view(ctx: HttpExecutionContext) {
-    ctx.req.query.abc
-    ctx.req.query.sca_esv
+    ctx.req.query.abc;
+    ctx.req.query.sca_esv;
     return [{ name: 'view ok' }];
   }
 }
-
-
-
-
-// method name:   | function 
-// Delete    --> delete 
-//Put    --> edit
-// Get       --> view

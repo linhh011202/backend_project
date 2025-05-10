@@ -42,3 +42,9 @@ export const Permissions = (...permissions: string[]): MethodDecorator => {
     Reflect.defineMetadata(HttpMetadata.Permissions, permissions, descriptor.value!);
   };
 };
+
+export const Injectable = (): ClassDecorator => {
+  return target => {
+    Reflect.defineMetadata('__injectable__', true, target);
+  };
+};
